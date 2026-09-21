@@ -1,0 +1,4 @@
+distance_test_cm,measured_length_cm,measured_breadth_cm,measured_height_cm,length_std_cm,breadth_std_cm,height_std_cm,valid_points,visible_planes,geometry_status
+80.0,8.97,4.98,0.63,0.03,0.02,0.09,3013,1,"PARTIAL VISIBILITY (1 FACE) — Depth extent approximate"
+100.0,9.03,4.83,1.14,0.04,0.06,0.19,1841,1,"PARTIAL VISIBILITY (1 FACE) — Depth extent approximate"
+120.0,9.05,5.23,1.63,0.09,0.07,0.34,1394,1,"PARTIAL VISIBILITY (1 FACE) — Depth extent approximate"

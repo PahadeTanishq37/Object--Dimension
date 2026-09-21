@@ -1,0 +1,114 @@
+==================================================
+  3D GEOMETRY DEBUG REPORT: debug_87cm_20260921_164651
+==================================================
+
+Timestamp        : 20260921_164651
+Camera Distance Z: 87.36 cm
+Object Points    : 5077
+
+PLANES:
+  Plane 1:
+    Equation     : 0.8169x + -0.1053y + -0.5671z + 0.5530 = 0
+    Normal (XYZ) : [0.8169, -0.1053, -0.5671]
+    Inliers      : 3263 points
+    RMS Residual : 0.35 cm (Median: 0.20 cm)
+    Approx Area  : 116.7 cm²
+
+  Plane 2:
+    Equation     : -0.5490x + -0.0943y + -0.8305z + 0.6582 = 0
+    Normal (XYZ) : [-0.5490, -0.0943, -0.8305]
+    Inliers      : 1814 points
+    RMS Residual : 0.20 cm (Median: 0.11 cm)
+    Approx Area  : 46.1 cm²
+
+PLANE ANGLES:
+  Pair 1: 88.14°
+
+CORNERS (Camera Frame XYZ cm):
+  C1 = (-15.50, +14.55, 83.50) cm
+  C2 = (-15.28, +20.87, 82.63) cm
+  C3 = (-5.84, +22.36, 95.95) cm
+  C4 = (-6.06, +16.04, 96.81) cm
+  C5 = (-8.19, +13.65, 78.77) cm
+  C6 = (-7.98, +19.98, 77.91) cm
+  C7 = (+1.46, +21.47, 91.22) cm
+  C8 = (+1.24, +15.14, 92.08) cm
+
+EDGES:
+  Edge E1 (C1 -> C2):
+    Length        : 6.39 cm
+    Direction     : [+0.0340, +0.9903, -0.1349]
+    Classification: HEIGHT
+    Point Support : 0 (Median dist: 0.00 cm)
+
+  Edge E2 (C4 -> C3):
+    Length        : 6.39 cm
+    Direction     : [+0.0340, +0.9903, -0.1349]
+    Classification: HEIGHT
+    Point Support : 0 (Median dist: 0.00 cm)
+
+  Edge E3 (C5 -> C6):
+    Length        : 6.39 cm
+    Direction     : [+0.0340, +0.9903, -0.1349]
+    Classification: HEIGHT
+    Point Support : 0 (Median dist: 0.00 cm)
+
+  Edge E4 (C8 -> C7):
+    Length        : 6.39 cm
+    Direction     : [+0.0340, +0.9903, -0.1349]
+    Classification: HEIGHT
+    Point Support : 0 (Median dist: 0.00 cm)
+
+  Edge E5 (C2 -> C3):
+    Length        : 16.39 cm
+    Direction     : [+0.5758, +0.0909, +0.8125]
+    Classification: LENGTH
+    Point Support : 143 (Median dist: 1.58 cm)
+
+  Edge E6 (C1 -> C4):
+    Length        : 16.39 cm
+    Direction     : [+0.5758, +0.0909, +0.8125]
+    Classification: LENGTH
+    Point Support : 212 (Median dist: 1.48 cm)
+
+  Edge E7 (C6 -> C7):
+    Length        : 16.39 cm
+    Direction     : [+0.5758, +0.0909, +0.8125]
+    Classification: LENGTH
+    Point Support : 1 (Median dist: 2.00 cm)
+
+  Edge E8 (C5 -> C8):
+    Length        : 16.39 cm
+    Direction     : [+0.5758, +0.0909, +0.8125]
+    Classification: LENGTH
+    Point Support : 0 (Median dist: 0.00 cm)
+
+  Edge E9 (C1 -> C5):
+    Length        : 8.75 cm
+    Direction     : [+0.8352, -0.1023, -0.5404]
+    Classification: BREADTH
+    Point Support : 0 (Median dist: 0.00 cm)
+
+  Edge E10 (C2 -> C6):
+    Length        : 8.75 cm
+    Direction     : [+0.8352, -0.1023, -0.5404]
+    Classification: BREADTH
+    Point Support : 0 (Median dist: 0.00 cm)
+
+  Edge E11 (C3 -> C7):
+    Length        : 8.75 cm
+    Direction     : [+0.8352, -0.1023, -0.5404]
+    Classification: BREADTH
+    Point Support : 277 (Median dist: 1.29 cm)
+
+  Edge E12 (C4 -> C8):
+    Length        : 8.75 cm
+    Direction     : [+0.8352, -0.1023, -0.5404]
+    Classification: BREADTH
+    Point Support : 105 (Median dist: 1.56 cm)
+
+FINAL MEASUREMENT:
+  L = 16.51 cm (std: 0.18 cm)
+  B = 8.67 cm (std: 0.82 cm)
+  H = 6.57 cm (std: 0.24 cm)
+  Status: GEOMETRY VALID (2 Faces @ 88.1 deg)

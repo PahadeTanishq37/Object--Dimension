@@ -1,0 +1,4 @@
+distance_cm,length_cm,breadth_cm,height_cm,length_std_cm,breadth_std_cm,height_std_cm,length_abs_error_cm,breadth_abs_error_cm,height_abs_error_cm,length_percent_error,breadth_percent_error,height_percent_error,confidence_length,confidence_breadth,confidence_height
+80.0,16.48,8.98,5.08,0.21,0.25,0.19,0.12,0.12,0.08,0.72,1.32,1.60,"HIGH","HIGH","HIGH"
+100.0,15.82,8.94,5.10,0.31,0.22,0.18,0.78,0.16,0.10,4.70,1.76,2.00,"HIGH","HIGH","HIGH"
+120.0,16.12,8.86,5.18,0.38,0.34,0.26,0.48,0.24,0.18,2.89,2.64,3.60,"HIGH","HIGH","HIGH"

@@ -1,0 +1,19 @@
+# Requirements — Intel RealSense D455f Object Dimension Measurement Project
+#
+# Install with:
+#   pip install -r requirements.txt
+
+# Intel RealSense SDK Python bindings
+pyrealsense2>=2.54.0
+
+# Image processing and computer vision
+opencv-python>=4.8.0
+
+# Numerical computing
+numpy>=1.24.0
+
+# Plotting (Stage 3b repeatability experiment)
+matplotlib>=3.7.0
+
+# Statistical analysis — linear regression (Stage 3b)
+scipy>=1.10.0
