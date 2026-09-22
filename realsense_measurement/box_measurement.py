@@ -273,11 +273,10 @@ class MeasurementResult:
 # ===========================================================================
 
 _current_roi = ROIState()
+_user_dragged_new_roi = False
 
 def _mouse_callback(event, x, y, flags, param):
-    global _current_roi
-    if _current_roi.is_locked:
-        return
+    global _current_roi, _user_dragged_new_roi
 
     if event == cv2.EVENT_LBUTTONDOWN:
         _current_roi.x1 = x
@@ -286,26 +285,31 @@ def _mouse_callback(event, x, y, flags, param):
         _current_roi.y2 = y
         _current_roi.is_drawing = True
         _current_roi.is_selected = False
+        _current_roi.is_locked = False
+        _user_dragged_new_roi = True
 
-    elif event == cv2.EVENT_MOUSEMOVE and _current_roi.is_drawing:
-        _current_roi.x2 = x
-        _current_roi.y2 = y
+    elif event == cv2.EVENT_MOUSEMOVE:
+        if _current_roi.is_drawing:
+            _current_roi.x2 = x
+            _current_roi.y2 = y
 
     elif event == cv2.EVENT_LBUTTONUP:
-        _current_roi.x2 = x
-        _current_roi.y2 = y
-        _current_roi.is_drawing = False
-        if _current_roi.is_valid:
-            _current_roi.is_selected = True
-            _current_roi.is_locked = True
-            xmin, ymin, xmax, ymax = _current_roi.box
-            print(f"\n[ROI LOCKED] Box: ({xmin}, {ymin}) -> ({xmax}, {ymax}) [{xmax-xmin} x {ymax-ymin} px]")
+        if _current_roi.is_drawing:
+            _current_roi.x2 = x
+            _current_roi.y2 = y
+            _current_roi.is_drawing = False
+            if _current_roi.is_valid:
+                _current_roi.is_selected = True
+                _current_roi.is_locked = True
+                xmin, ymin, xmax, ymax = _current_roi.box
+                print(f"\n[BORDER DRAWN & LOCKED] Object Box: ({xmin}, {ymin}) -> ({xmax}, {ymax}) [{xmax-xmin} x {ymax-ymin} px]")
 
 
 def reset_roi():
     global _current_roi
     _current_roi = ROIState()
-    print("\n[ROI RESET] Drag a new rectangle around the target box on the RGB feed.")
+    print("\n[BORDER RESET] Click and drag a new border around the target object.")
+
 
 
 # ===========================================================================
@@ -694,7 +698,10 @@ def extract_rgbd_physical_edges(
 
     edge_counter = 1
     for line in lines:
-        x1, y1, x2, y2 = line[0]
+        coords = np.asarray(line).ravel()
+        if len(coords) < 4:
+            continue
+        x1, y1, x2, y2 = coords[:4]
         seg_len_px = float(np.hypot(x2 - x1, y2 - y1))
         if seg_len_px < 28.0:
             continue
@@ -938,6 +945,90 @@ def calculate_plane_angles(planes: List[DetectedPlane]) -> List[float]:
     return angles
 
 
+def reconstruct_cuboid_from_pointcloud_pca(
+    points_3d: np.ndarray,
+    rgbd_edges: List[CandidatePhysicalEdge]
+) -> CuboidReconstruction:
+    centroid = np.mean(points_3d, axis=0)
+    centered = points_3d - centroid
+    cov = np.cov(centered, rowvar=False)
+    eig_vals, eig_vecs = np.linalg.eigh(cov)
+    idx = np.argsort(eig_vals)[::-1]
+    rot_matrix = eig_vecs[:, idx]
+    if np.linalg.det(rot_matrix) < 0:
+        rot_matrix[:, 2] = -rot_matrix[:, 2]
+
+    q0 = np.dot(centered, rot_matrix[:, 0])
+    q1 = np.dot(centered, rot_matrix[:, 1])
+    q2 = np.dot(centered, rot_matrix[:, 2])
+
+    l_span = max(1.0, float(np.percentile(q0, 98.0) - np.percentile(q0, 2.0)) * 100.0)
+    b_span = max(1.0, float(np.percentile(q1, 98.0) - np.percentile(q1, 2.0)) * 100.0)
+    h_span = max(1.0, float(np.percentile(q2, 98.0) - np.percentile(q2, 2.0)) * 100.0)
+
+    dims_data = [(l_span, rot_matrix[:, 0]), (b_span, rot_matrix[:, 1]), (h_span, rot_matrix[:, 2])]
+    dims_data.sort(key=lambda x: x[0], reverse=True)
+    l_span, l_ax = dims_data[0]
+    b_span, b_ax = dims_data[1]
+    h_span, h_ax = dims_data[2]
+    rot_matrix = np.column_stack([l_ax, b_ax, h_ax])
+    if np.linalg.det(rot_matrix) < 0:
+        rot_matrix[:, 2] = -rot_matrix[:, 2]
+
+    dim_l = DimensionEstimate(value_cm=l_span, confidence="HIGH" if len(points_3d) > 200 else "MEDIUM", source="3D Point Cloud Span", support_points=len(points_3d), median_dist_cm=0.0, is_valid=True)
+    dim_b = DimensionEstimate(value_cm=b_span, confidence="HIGH" if len(points_3d) > 200 else "MEDIUM", source="3D Point Cloud Span", support_points=len(points_3d), median_dist_cm=0.0, is_valid=True)
+    dim_h = DimensionEstimate(value_cm=h_span, confidence="MEDIUM", source="3D Point Cloud Depth Span", support_points=len(points_3d), median_dist_cm=0.0, is_valid=True)
+
+    hx, hy, hz = (l_span / 100.0) / 2.0, (b_span / 100.0) / 2.0, (h_span / 100.0) / 2.0
+    local_corners = np.array([
+        [-hx, -hy, -hz], [hx, -hy, -hz], [hx, hy, -hz], [-hx, hy, -hz],
+        [-hx, -hy,  hz], [hx, -hy,  hz], [hx, hy,  hz], [-hx, hy,  hz],
+    ])
+    corners_3d_m = (local_corners @ rot_matrix.T) + centroid
+    corners_labeled = {f"C{i+1}": (float(c[0] * 100.0), float(c[1] * 100.0), float(c[2] * 100.0)) for i, c in enumerate(corners_3d_m)}
+
+    edge_defs = [
+        ("E1", 0, 1), ("E2", 3, 2), ("E3", 4, 5), ("E4", 7, 6),
+        ("E5", 1, 2), ("E6", 0, 3), ("E7", 5, 6), ("E8", 4, 7),
+        ("E9", 0, 4), ("E10", 1, 5), ("E11", 2, 6), ("E12", 3, 7)
+    ]
+    reconstructed_edges = []
+    for e_id, idx1, idx2 in edge_defs:
+        p_start, p_end = corners_3d_m[idx1], corners_3d_m[idx2]
+        d_vec = p_end - p_start
+        e_len = float(np.linalg.norm(d_vec) * 100.0)
+        reconstructed_edges.append(ReconstructedEdge(
+            edge_id=e_id,
+            start_corner_name=f"C{idx1+1}",
+            end_corner_name=f"C{idx2+1}",
+            start_pt_3d_m=p_start,
+            end_pt_3d_m=p_end,
+            length_cm=e_len,
+            direction_vec=d_vec / (np.linalg.norm(d_vec) + 1e-6),
+            classification="LENGTH" if abs(e_len - l_span) < 0.5 else ("BREADTH" if abs(e_len - b_span) < 0.5 else "HEIGHT"),
+            support_points_count=len(points_3d),
+            median_point_dist_cm=0.0,
+            is_supported=True
+        ))
+
+    return CuboidReconstruction(
+        length=dim_l,
+        breadth=dim_b,
+        height=dim_h,
+        centroid_3d_m=centroid,
+        axes_rot=rot_matrix,
+        corners_3d_m=corners_3d_m,
+        corners_labeled=corners_labeled,
+        reconstructed_edges=reconstructed_edges,
+        candidate_physical_edges=rgbd_edges,
+        detected_planes=[],
+        num_planes=0,
+        inter_plane_angles_deg=[],
+        geometry_status="MEASURED (3D Point Cloud Span)",
+        is_reliable=True
+    )
+
+
 def reconstruct_cuboid_from_physical_edges(
     points_3d: np.ndarray,
     planes: List[DetectedPlane],
@@ -954,72 +1045,129 @@ def reconstruct_cuboid_from_physical_edges(
     # 1. Extract candidate RGB-D physical edges
     rgbd_edges = extract_rgbd_physical_edges(color_img, depth_m, roi, intrinsics, z_peak)
 
+    # If no planes fitted, fallback to 3D point cloud PCA bounding box
+    if n_planes == 0:
+        if len(points_3d) >= 30:
+            return reconstruct_cuboid_from_pointcloud_pca(points_3d, rgbd_edges)
+        return None
+
     # -----------------------------------------------------------------------
     # CASE A: Only 1 Face Visible
     # -----------------------------------------------------------------------
-    if n_planes < 2:
-        if n_planes == 1:
-            p0 = planes[0]
-            pts = p0.inlier_points
-            c = np.mean(pts, axis=0)
+    if n_planes == 1:
+        p0 = planes[0]
+        pts = p0.inlier_points
+        c = np.mean(pts, axis=0)
 
-            centered = pts - c
-            cov_2d = np.cov(centered, rowvar=False)
-            _, eig_vecs = np.linalg.eigh(cov_2d)
-            u1 = eig_vecs[:, 2]
-            u2 = np.cross(p0.normal, u1)
-            u2 = u2 / np.linalg.norm(u2)
+        centered = pts - c
+        cov_2d = np.cov(centered, rowvar=False)
+        _, eig_vecs = np.linalg.eigh(cov_2d)
+        u1 = eig_vecs[:, 2]
+        u2 = np.cross(p0.normal, u1)
+        u2 = u2 / np.linalg.norm(u2)
+        u3 = p0.normal
 
-            p0.local_axis_u = u1
-            p0.local_axis_v = u2
+        p0.local_axis_u = u1
+        p0.local_axis_v = u2
 
-            bnd_edges = extract_plane_boundary_lines(p0, points_3d, plane_id=1)
-            all_cands = rgbd_edges + bnd_edges
+        q_u = np.dot(pts - c, u1)
+        q_v = np.dot(pts - c, u2)
+        p0.extent_u_cm = float(np.percentile(q_u, HIGH_PERCENTILE) - np.percentile(q_u, LOW_PERCENTILE)) * 100.0
+        p0.extent_v_cm = float(np.percentile(q_v, HIGH_PERCENTILE) - np.percentile(q_v, LOW_PERCENTILE)) * 100.0
 
-            dim_l = cluster_and_estimate_dimension(u1, all_cands, p0.extent_u_cm, "Length")
-            dim_b = cluster_and_estimate_dimension(u2, all_cands, p0.extent_v_cm, "Breadth")
-            dim_h = DimensionEstimate(0.0, "UNSUPPORTED", "Unobserved 3rd face", 0, 0.0, False)
+        bnd_edges = extract_plane_boundary_lines(p0, points_3d, plane_id=1)
+        all_cands = rgbd_edges + bnd_edges
 
-            return CuboidReconstruction(
-                length=dim_l,
-                breadth=dim_b,
-                height=dim_h,
-                centroid_3d_m=c,
-                axes_rot=np.column_stack([u1, u2, p0.normal]),
-                corners_3d_m=np.zeros((8, 3)),
-                corners_labeled={},
-                reconstructed_edges=[],
-                candidate_physical_edges=all_cands,
-                detected_planes=planes,
-                num_planes=1,
-                inter_plane_angles_deg=angles,
-                geometry_status="SHOW MORE BOX FACES (Only 1 face visible — angle box 15-35 deg)",
-                is_reliable=False
-            )
-        else:
-            return None
+        dim_l = cluster_and_estimate_dimension(u1, all_cands, p0.extent_u_cm, "Length")
+        dim_b = cluster_and_estimate_dimension(u2, all_cands, p0.extent_v_cm, "Breadth")
+
+        # Height from depth extent along normal and depth range
+        q_norm = np.dot(points_3d - c, u3)
+        depth_span_cm = float(np.percentile(q_norm, 98.0) - np.percentile(q_norm, 2.0)) * 100.0
+        z_span_cm = float(np.percentile(points_3d[:, 2], 98.0) - np.percentile(points_3d[:, 2], 2.0)) * 100.0
+        h_val = max(1.0, max(depth_span_cm, z_span_cm))
+
+        dim_h = DimensionEstimate(
+            value_cm=h_val,
+            confidence="MEDIUM",
+            source="Depth Extent",
+            support_points=len(points_3d),
+            median_dist_cm=0.0,
+            is_valid=True
+        )
+
+        dim_items = [
+            (dim_l.value_cm if dim_l.is_valid else p0.extent_u_cm, dim_l, u1),
+            (dim_b.value_cm if dim_b.is_valid else p0.extent_v_cm, dim_b, u2),
+            (h_val, dim_h, u3)
+        ]
+        dim_items.sort(key=lambda x: x[0], reverse=True)
+        l_span, dim_l_res, l_axis = dim_items[0]
+        b_span, dim_b_res, b_axis = dim_items[1]
+        h_span, dim_h_res, h_axis = dim_items[2]
+
+        rot_matrix = np.column_stack([l_axis, b_axis, h_axis])
+        if np.linalg.det(rot_matrix) < 0:
+            rot_matrix[:, 2] = -rot_matrix[:, 2]
+
+        hx, hy, hz = (l_span / 100.0) / 2.0, (b_span / 100.0) / 2.0, (h_span / 100.0) / 2.0
+        local_corners = np.array([
+            [-hx, -hy, -hz], [hx, -hy, -hz], [hx, hy, -hz], [-hx, hy, -hz],
+            [-hx, -hy,  hz], [hx, -hy,  hz], [hx, hy,  hz], [-hx, hy,  hz],
+        ])
+        corners_3d_m = (local_corners @ rot_matrix.T) + c
+        corners_labeled = {f"C{i+1}": (float(pt[0] * 100.0), float(pt[1] * 100.0), float(pt[2] * 100.0)) for i, pt in enumerate(corners_3d_m)}
+
+        edge_defs = [
+            ("E1", 0, 1), ("E2", 3, 2), ("E3", 4, 5), ("E4", 7, 6),
+            ("E5", 1, 2), ("E6", 0, 3), ("E7", 5, 6), ("E8", 4, 7),
+            ("E9", 0, 4), ("E10", 1, 5), ("E11", 2, 6), ("E12", 3, 7)
+        ]
+        reconstructed_edges = []
+        for e_id, idx1, idx2 in edge_defs:
+            p_start, p_end = corners_3d_m[idx1], corners_3d_m[idx2]
+            d_vec = p_end - p_start
+            e_len = float(np.linalg.norm(d_vec) * 100.0)
+            reconstructed_edges.append(ReconstructedEdge(
+                edge_id=e_id,
+                start_corner_name=f"C{idx1+1}",
+                end_corner_name=f"C{idx2+1}",
+                start_pt_3d_m=p_start,
+                end_pt_3d_m=p_end,
+                length_cm=e_len,
+                direction_vec=d_vec / (np.linalg.norm(d_vec) + 1e-6),
+                classification="LENGTH" if abs(e_len - l_span) < 0.5 else ("BREADTH" if abs(e_len - b_span) < 0.5 else "HEIGHT"),
+                support_points_count=len(points_3d),
+                median_point_dist_cm=0.0,
+                is_supported=True
+            ))
+
+        return CuboidReconstruction(
+            length=dim_l_res,
+            breadth=dim_b_res,
+            height=dim_h_res,
+            centroid_3d_m=c,
+            axes_rot=rot_matrix,
+            corners_3d_m=corners_3d_m,
+            corners_labeled=corners_labeled,
+            reconstructed_edges=reconstructed_edges,
+            candidate_physical_edges=all_cands,
+            detected_planes=planes,
+            num_planes=1,
+            inter_plane_angles_deg=angles,
+            geometry_status="MEASURED (Face Extent + Depth)",
+            is_reliable=True
+        )
 
     # -----------------------------------------------------------------------
-    # CASE B: 2 Orthogonal Visible Faces (Front + Top OR Front + Side)
+    # CASE B: 2 Faces Visible
     # -----------------------------------------------------------------------
     if n_planes == 2:
         ang = angles[0]
         if abs(ang - 90.0) > ortho_tol_deg:
-            dim_none = DimensionEstimate(0.0, "UNSUPPORTED", "Non-orthogonal faces", 0, 0.0, False)
-            return CuboidReconstruction(
-                length=dim_none, breadth=dim_none, height=dim_none,
-                centroid_3d_m=np.mean(points_3d, axis=0),
-                axes_rot=np.eye(3),
-                corners_3d_m=np.zeros((8, 3)),
-                corners_labeled={},
-                reconstructed_edges=[],
-                candidate_physical_edges=rgbd_edges,
-                detected_planes=planes,
-                num_planes=2,
-                inter_plane_angles_deg=angles,
-                geometry_status=f"NON-ORTHOGONAL FACES ({ang:.1f} deg) — MUST BE ~90 DEG",
-                is_reliable=False
-            )
+            # Oblique planes fallback to PCA
+            return reconstruct_cuboid_from_pointcloud_pca(points_3d, rgbd_edges)
+
 
         p1, p2 = planes[0], planes[1]
 
@@ -1251,6 +1399,22 @@ class TemporalDimensionFilter:
         n = len(self.l_buf)
         if n == 0:
             return TemporalStats()
+        l_arr = np.array(self.l_buf)
+        b_arr = np.array(self.b_buf)
+        h_arr = np.array(self.h_buf)
+        return TemporalStats(
+            length_median=float(np.median(l_arr)),
+            length_mean=float(np.mean(l_arr)),
+            length_std=float(np.std(l_arr)),
+            breadth_median=float(np.median(b_arr)),
+            breadth_mean=float(np.mean(b_arr)),
+            breadth_std=float(np.std(b_arr)),
+            height_median=float(np.median(h_arr)),
+            height_mean=float(np.mean(h_arr)),
+            height_std=float(np.std(h_arr)),
+            sample_count=n
+        )
+
 
 # ===========================================================================
 # REAL-TIME PROFESSIONAL MEASUREMENT VISUALIZATION
@@ -1372,19 +1536,61 @@ def draw_measurement_overlay(
         overlay[mask > 0] = [0, 200, 90]
         cv2.addWeighted(overlay, 0.18, annotated, 0.82, 0, annotated)
 
-    # 2. Bounding Box & Mode Indicator
-    if detection_mode == "AUTO" and detection_res is not None and detection_res.is_valid:
-        ax1, ay1, ax2, ay2 = detection_res.bbox
-        cv2.rectangle(annotated, (ax1, ay1), (ax2, ay2), (255, 255, 0), 1, cv2.LINE_AA)
-        cv2.putText(annotated, f"AUTO: {detection_res.class_name} [{detection_res.confidence:.2f}]",
-                    (ax1, max(18, ay1 - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (255, 255, 0), 1, cv2.LINE_AA)
-    elif roi.is_valid or roi.is_drawing:
+    # 2. Guidance & Drawing Prompts
+    if not roi.is_locked and not roi.is_drawing:
+        guide_msg = "CLICK & DRAG A BORDER AROUND ANY OBJECT TO MEASURE IT"
+        (gw, gh), _ = cv2.getTextSize(guide_msg, cv2.FONT_HERSHEY_SIMPLEX, 0.52, 2)
+        gx = (STREAM_WIDTH - gw) // 2
+        gy = 40
+        cv2.rectangle(annotated, (gx - 14, gy - gh - 8), (gx + gw + 14, gy + 8), (15, 15, 15), -1)
+        cv2.rectangle(annotated, (gx - 14, gy - gh - 8), (gx + gw + 14, gy + 8), (0, 255, 255), 1, cv2.LINE_AA)
+        cv2.putText(annotated, guide_msg, (gx, gy), cv2.FONT_HERSHEY_SIMPLEX, 0.52, (0, 255, 255), 2, cv2.LINE_AA)
+
+    elif roi.is_drawing:
         xmin, ymin, xmax, ymax = roi.box
-        roi_col = (0, 255, 0) if roi.is_locked else (0, 255, 255)
-        cv2.rectangle(annotated, (xmin, ymin), (xmax, ymax), roi_col, 1, cv2.LINE_AA)
-        if not roi.is_locked:
-            cv2.putText(annotated, "DRAG ROI", (xmin, max(18, ymin - 6)),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.42, roi_col, 1, cv2.LINE_AA)
+        cv2.rectangle(annotated, (xmin, ymin), (xmax, ymax), (0, 255, 255), 2, cv2.LINE_AA)
+        draw_txt = f"RELEASE TO MEASURE [{xmax-xmin} x {ymax-ymin} px]"
+        cv2.putText(annotated, draw_txt, (xmin, max(22, ymin - 8)),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.48, (0, 255, 255), 2, cv2.LINE_AA)
+
+    elif roi.is_locked and roi.is_valid:
+        xmin, ymin, xmax, ymax = roi.box
+        # Draw high-contrast bounding border with targeting corners
+        col = (0, 240, 120)
+        cv2.rectangle(annotated, (xmin, ymin), (xmax, ymax), col, 2, cv2.LINE_AA)
+        bracket_len = min(22, max(8, min(xmax - xmin, ymax - ymin) // 4))
+        # Corners
+        cv2.line(annotated, (xmin, ymin), (xmin + bracket_len, ymin), (255, 255, 255), 3, cv2.LINE_AA)
+        cv2.line(annotated, (xmin, ymin), (xmin, ymin + bracket_len), (255, 255, 255), 3, cv2.LINE_AA)
+        cv2.line(annotated, (xmax, ymin), (xmax - bracket_len, ymin), (255, 255, 255), 3, cv2.LINE_AA)
+        cv2.line(annotated, (xmax, ymin), (xmax, ymin + bracket_len), (255, 255, 255), 3, cv2.LINE_AA)
+        cv2.line(annotated, (xmin, ymax), (xmin + bracket_len, ymax), (255, 255, 255), 3, cv2.LINE_AA)
+        cv2.line(annotated, (xmin, ymax), (xmin, ymax - bracket_len), (255, 255, 255), 3, cv2.LINE_AA)
+        cv2.line(annotated, (xmax, ymax), (xmax - bracket_len, ymax), (255, 255, 255), 3, cv2.LINE_AA)
+        cv2.line(annotated, (xmax, ymax), (xmax, ymax - bracket_len), (255, 255, 255), 3, cv2.LINE_AA)
+
+        # Floating measurement badge directly above the drawn bounding box
+        if cuboid is not None:
+            l_val = t_stats.length_median if t_stats.sample_count > 5 else cuboid.length.value_cm
+            b_val = t_stats.breadth_median if t_stats.sample_count > 5 else cuboid.breadth.value_cm
+            h_val = t_stats.height_median if t_stats.sample_count > 5 else cuboid.height.value_cm
+            z_dist = (cuboid.centroid_3d_m[2] * 100.0) if np.any(cuboid.centroid_3d_m) else 0.0
+
+            badge_str = f"L: {l_val:.1f} cm  |  B: {b_val:.1f} cm  |  H: {h_val:.1f} cm"
+            (bw, bh), _ = cv2.getTextSize(badge_str, cv2.FONT_HERSHEY_SIMPLEX, 0.52, 2)
+            bx_mid = (xmin + xmax) // 2
+            bx1 = max(10, bx_mid - bw // 2 - 10)
+            by1 = max(8, ymin - bh - 14)
+            bx2 = min(STREAM_WIDTH - 10, bx1 + bw + 20)
+            by2 = by1 + bh + 12
+
+            sub_img = annotated[by1:by2, bx1:bx2]
+            if sub_img.size > 0:
+                dark_rect = np.full_like(sub_img, 15)
+                cv2.addWeighted(dark_rect, 0.85, sub_img, 0.15, 0, sub_img)
+                cv2.rectangle(annotated, (bx1, by1), (bx2, by2), (0, 240, 120), 1, cv2.LINE_AA)
+                cv2.putText(annotated, badge_str, (bx1 + 10, by2 - 6),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.52, (0, 255, 255), 2, cv2.LINE_AA)
 
     # 3. Projected Physical Dimension Arrows & Supported Corner Markers
     if cuboid is not None and np.any(cuboid.corners_3d_m):
@@ -1402,38 +1608,40 @@ def draw_measurement_overlay(
 
         # Draw Length Dimension Arrow
         if cuboid.length.is_valid and len(pix_corners) >= 4:
-            target_edge = l_edges[0] if l_edges else cuboid.reconstructed_edges[0]
-            i1 = int(target_edge.start_corner_name[1:]) - 1
-            i2 = int(target_edge.end_corner_name[1:]) - 1
-            draw_dimension_arrow_with_label(
-                annotated, pix_corners[i1], pix_corners[i2],
-                f"L = {l_val:.1f} cm", (0, 255, 255), normal_offset_px=-22.0
-            )
+            target_edge = l_edges[0] if l_edges else (cuboid.reconstructed_edges[0] if cuboid.reconstructed_edges else None)
+            if target_edge:
+                i1 = int(target_edge.start_corner_name[1:]) - 1
+                i2 = int(target_edge.end_corner_name[1:]) - 1
+                draw_dimension_arrow_with_label(
+                    annotated, pix_corners[i1], pix_corners[i2],
+                    f"L = {l_val:.1f} cm", (0, 255, 255), normal_offset_px=-22.0
+                )
 
         # Draw Breadth Dimension Arrow
         if cuboid.breadth.is_valid and len(pix_corners) >= 6:
-            target_edge = b_edges[0] if b_edges else [e for e in cuboid.reconstructed_edges if e.classification == "BREADTH"][0]
-            i1 = int(target_edge.start_corner_name[1:]) - 1
-            i2 = int(target_edge.end_corner_name[1:]) - 1
-            draw_dimension_arrow_with_label(
-                annotated, pix_corners[i1], pix_corners[i2],
-                f"B = {b_val:.1f} cm", (100, 255, 100), normal_offset_px=22.0
-            )
+            target_edge = b_edges[0] if b_edges else ([e for e in cuboid.reconstructed_edges if e.classification == "BREADTH"][0] if any(e.classification == "BREADTH" for e in cuboid.reconstructed_edges) else None)
+            if target_edge:
+                i1 = int(target_edge.start_corner_name[1:]) - 1
+                i2 = int(target_edge.end_corner_name[1:]) - 1
+                draw_dimension_arrow_with_label(
+                    annotated, pix_corners[i1], pix_corners[i2],
+                    f"B = {b_val:.1f} cm", (100, 255, 100), normal_offset_px=22.0
+                )
 
         # Draw Height Dimension Arrow
         if cuboid.height.is_valid and len(pix_corners) >= 8:
-            target_edge = h_edges[0] if h_edges else [e for e in cuboid.reconstructed_edges if e.classification == "HEIGHT"][0]
-            i1 = int(target_edge.start_corner_name[1:]) - 1
-            i2 = int(target_edge.end_corner_name[1:]) - 1
-            draw_dimension_arrow_with_label(
-                annotated, pix_corners[i1], pix_corners[i2],
-                f"H = {h_val:.1f} cm", (255, 180, 0), normal_offset_px=22.0
-            )
+            target_edge = h_edges[0] if h_edges else ([e for e in cuboid.reconstructed_edges if e.classification == "HEIGHT"][0] if any(e.classification == "HEIGHT" for e in cuboid.reconstructed_edges) else None)
+            if target_edge:
+                i1 = int(target_edge.start_corner_name[1:]) - 1
+                i2 = int(target_edge.end_corner_name[1:]) - 1
+                draw_dimension_arrow_with_label(
+                    annotated, pix_corners[i1], pix_corners[i2],
+                    f"H = {h_val:.1f} cm", (255, 180, 0), normal_offset_px=22.0
+                )
 
         # 4. Supported Physical Corner Markers (Concentric Circles)
         for i, c_pt_m in enumerate(corners):
             c_pix = pix_corners[i]
-            # Check if this corner belongs to a supported edge
             adj_supported = any(
                 e.is_supported for e in cuboid.reconstructed_edges
                 if e.start_corner_name == f"C{i+1}" or e.end_corner_name == f"C{i+1}"
@@ -1456,13 +1664,13 @@ def draw_measurement_overlay(
     # 5. Clean Professional Telemetry HUD Panel (Top-Left)
     hud_w = 420
     hud_h = 240 if debug_mode else 190
-    sub_h, sub_w = annotated.shape[:2]
 
     # Glassmorphic dark card
     hud_crop = annotated[12:12+hud_h, 12:12+hud_w]
-    dark_overlay = np.full_like(hud_crop, 18)
-    cv2.addWeighted(dark_overlay, 0.82, hud_crop, 0.18, 0, hud_crop)
-    cv2.rectangle(annotated, (12, 12), (12+hud_w, 12+hud_h), (80, 80, 80), 1, cv2.LINE_AA)
+    if hud_crop.size > 0:
+        dark_overlay = np.full_like(hud_crop, 18)
+        cv2.addWeighted(dark_overlay, 0.82, hud_crop, 0.18, 0, hud_crop)
+        cv2.rectangle(annotated, (12, 12), (12+hud_w, 12+hud_h), (80, 80, 80), 1, cv2.LINE_AA)
 
     # Header
     debug_tag = " [DEBUG]" if debug_mode else ""
@@ -1478,7 +1686,7 @@ def draw_measurement_overlay(
             det_txt = "OBJECT : NO OBJECT DETECTED"
             det_col = (0, 100, 255)
     else:
-        det_txt = "OBJECT : box  |  DETECTION: MANUAL ROI" if roi.is_locked else "DETECTION: DRAG ROI ON RGB"
+        det_txt = "OBJECT : box  |  BORDER: LOCKED" if roi.is_locked else "DETECTION: DRAW BORDER AROUND OBJECT"
         det_col = (0, 255, 150) if roi.is_locked else (0, 180, 255)
 
     cv2.putText(annotated, det_txt, (24, 52), cv2.FONT_HERSHEY_SIMPLEX, 0.40, det_col, 1, cv2.LINE_AA)
@@ -1486,7 +1694,9 @@ def draw_measurement_overlay(
 
     # Measurement Dimensions
     if cuboid is not None and cuboid.is_reliable:
-        l_m, b_m, h_m = t_stats.length_median, t_stats.breadth_median, t_stats.height_median
+        l_m = t_stats.length_median if t_stats.sample_count > 5 else cuboid.length.value_cm
+        b_m = t_stats.breadth_median if t_stats.sample_count > 5 else cuboid.breadth.value_cm
+        h_m = t_stats.height_median if t_stats.sample_count > 5 else cuboid.height.value_cm
         l_s, b_s, h_s = t_stats.length_std, t_stats.breadth_std, t_stats.height_std
 
         cv2.putText(annotated, f"Length  (L) : {l_m:5.1f} cm  (±{l_s:.1f})  [{cuboid.length.confidence}]", (24, 82),
@@ -1498,22 +1708,23 @@ def draw_measurement_overlay(
     elif cuboid is not None:
         cv2.putText(annotated, f"METROLOGY : {cuboid.geometry_status}", (24, 86),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.42, (0, 165, 255), 1, cv2.LINE_AA)
-        cv2.putText(annotated, "Show 2 orthogonal faces (tilt box 15-35 deg)", (24, 110),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.38, (160, 160, 160), 1, cv2.LINE_AA)
     else:
-        cv2.putText(annotated, "METROLOGY : Awaiting Target Geometry", (24, 86),
+        cv2.putText(annotated, "METROLOGY : Draw a border around the object", (24, 86),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.42, (150, 150, 150), 1, cv2.LINE_AA)
 
     # Footer metrics
     cv2.line(annotated, (24, 134), (12+hud_w - 12, 134), (60, 60, 60), 1)
-    z_dist = (cuboid.centroid_3d_m[2] * 100.0) if cuboid is not None else 0.0
+    z_dist = (cuboid.centroid_3d_m[2] * 100.0) if (cuboid is not None and np.any(cuboid.centroid_3d_m)) else 0.0
     cv2.putText(annotated, f"Distance Z: {z_dist:.1f} cm  |  {fps:.1f} FPS  |  {t_stats.sample_count} frames", (24, 152),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.38, (180, 180, 180), 1, cv2.LINE_AA)
 
     if ground_truth.is_set and cuboid is not None and cuboid.is_reliable:
-        err_l = abs(t_stats.length_median - ground_truth.length_cm)
-        err_b = abs(t_stats.breadth_median - ground_truth.breadth_cm)
-        err_h = abs(t_stats.height_median - ground_truth.height_cm)
+        l_curr = t_stats.length_median if t_stats.sample_count > 5 else cuboid.length.value_cm
+        b_curr = t_stats.breadth_median if t_stats.sample_count > 5 else cuboid.breadth.value_cm
+        h_curr = t_stats.height_median if t_stats.sample_count > 5 else cuboid.height.value_cm
+        err_l = abs(l_curr - ground_truth.length_cm)
+        err_b = abs(b_curr - ground_truth.breadth_cm)
+        err_h = abs(h_curr - ground_truth.height_cm)
         gt_txt = f"GT Err: dL={err_l:.1f}cm ({err_l/ground_truth.length_cm*100:.1f}%), dB={err_b:.1f}cm, dH={err_h:.1f}cm"
         cv2.putText(annotated, gt_txt, (24, 172), cv2.FONT_HERSHEY_SIMPLEX, 0.37, (255, 180, 100), 1, cv2.LINE_AA)
 
@@ -1524,11 +1735,12 @@ def draw_measurement_overlay(
         cv2.putText(annotated, f"Edges  : {cands_count} supported physical candidates", (24, 222), cv2.FONT_HERSHEY_SIMPLEX, 0.36, (255, 200, 255), 1, cv2.LINE_AA)
 
     # 6. Bottom Navigation Bar
-    ctrl_str = "[A] Auto Detection  |  [M] Manual ROI  |  [D] Toggle Debug  |  [S] Save Snapshot  |  [Q] Exit"
+    ctrl_str = "Draw Border: Drag Mouse  |  [N] Reset  |  [D] Debug Mode  |  [S] Save Snapshot  |  [Q] Exit"
     cv2.putText(annotated, ctrl_str, (24, STREAM_HEIGHT - 16),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.44, (220, 220, 220), 1, cv2.LINE_AA)
 
     return annotated
+
 
 
 # ===========================================================================
@@ -1965,7 +2177,7 @@ def main():
     setup_gui()
 
     detector = RGBDForegroundDetector(min_depth_m=0.35, max_depth_m=2.20, smooth_tracking=True)
-    detection_mode = "AUTO"  # Default to AUTO mode
+    detection_mode = "MANUAL"  # Default to MANUAL Border-Drawing mode
 
     temporal_filter = TemporalDimensionFilter(TEMPORAL_BUFFER_SIZE)
     ground_truth = GroundTruth()
@@ -1976,17 +2188,20 @@ def main():
     t_start = time.time()
 
     print("[INFO] Application running.")
+    print("[INFO] Quick Start: CLICK & DRAG A BORDER AROUND YOUR OBJECT IN THE RGB WINDOW.")
     print("[INFO] Controls:")
-    print("       - [A]     : Switch to AUTOMATIC Detection Mode")
-    print("       - [M]     : Switch to MANUAL ROI Mode")
-    print("       - [D]     : Toggle On-Screen Debug & Print Physical Edge Summary")
-    print("       - [S]     : Save Measurement Snapshot to 'measurement_snapshots/'")
-    print("       - [T]     : Record Distance Invariance row to CSV")
-    print("       - [G]     : Update Ground Truth (L, B, H in cm)")
-    print("       - [P]     : Export 3D Matplotlib Plot")
-    print("       - [N]     : Reset / Select New ROI")
-    print("       - [Q]/ESC : Exit cleanly\n")
+    print("       - Mouse Drag: Draw border around any object to measure it")
+    print("       - [N]       : Reset / Draw new border")
+    print("       - [A]       : Switch to AUTOMATIC Detection Mode")
+    print("       - [M]       : Switch to MANUAL Border Mode")
+    print("       - [D]       : Toggle On-Screen Debug Overlay")
+    print("       - [S]       : Save Measurement Snapshot to 'measurement_snapshots/'")
+    print("       - [T]       : Record Distance Invariance row to CSV")
+    print("       - [G]       : Update Ground Truth (L, B, H in cm)")
+    print("       - [P]       : Export 3D Matplotlib Plot")
+    print("       - [Q]/ESC   : Exit cleanly\n")
 
+    global _user_dragged_new_roi
     try:
         while not _shutdown_requested:
             success, frameset = cam.pipeline.try_wait_for_frames(timeout_ms=3000)
@@ -2009,6 +2224,12 @@ def main():
 
             params = get_tuning_parameters()
 
+            # Handle user drawing a new border with mouse
+            if _user_dragged_new_roi:
+                detection_mode = "MANUAL"
+                temporal_filter.clear()
+                _user_dragged_new_roi = False
+
             # 1. Object Detection (Auto vs Manual)
             detection_res = None
             if detection_mode == "AUTO":
@@ -2028,7 +2249,7 @@ def main():
 
             # 3. Multi-Plane RANSAC & Physical Edge Metrology
             cuboid = None
-            if points_3d is not None and len(points_3d) >= 60:
+            if points_3d is not None and len(points_3d) >= 25:
                 planes = detect_planes_ransac(points_3d, dist_thresh_m=params["ransac_thresh_m"])
                 cuboid = reconstruct_cuboid_from_physical_edges(
                     points_3d, planes, color_img, depth_m, _current_roi, cam.intrinsics, z_peak, DEFAULT_ORTHO_TOL_DEG
