@@ -1,0 +1,4 @@
+Dimension,Value_m,Value_cm,Value_mm,Uncertainty_cm,Confidence,Quality,Method,Supporting_Points
+Length,0.126596,12.66,126.6,0.35,0.91,SUPPORT_PLANE_OFFSET,density_gradient_step,37468
+Breadth,0.115700,11.57,115.7,0.35,0.88,COMPLETE_OBSERVATION,density_gradient_step,31856
+Height,0.115662,11.57,115.7,0.18,0.94,RECONSTRUCTED_FACET_PAIR,facet_pair_distance,34263

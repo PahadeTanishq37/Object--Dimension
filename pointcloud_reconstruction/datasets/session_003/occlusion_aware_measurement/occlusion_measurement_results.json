@@ -1,0 +1,247 @@
+{
+  "session_id": "session_003",
+  "timestamp_iso": "2026-09-24T12:31:31+0530",
+  "input_ply": "C:\\Users\\pahad\\OneDrive\\Desktop\\project\\pointcloud_reconstruction\\datasets\\session_003\\measurement\\object_measured_model.ply",
+  "shape_model": {
+    "shape_type": "oriented_cuboid",
+    "dimensions": {
+      "Length": {
+        "name": "Length",
+        "axis_vector": [
+          -0.054139756789121286,
+          -0.07017230471926972,
+          -0.9960646235988911
+        ],
+        "value_m": 0.12659586488677088,
+        "value_cm": 12.659586488677089,
+        "value_mm": 126.59586488677088,
+        "uncertainty_cm": 0.35,
+        "confidence": 0.91,
+        "observation_quality": "SUPPORT_PLANE_OFFSET",
+        "method": "density_gradient_step",
+        "supporting_points": 37468,
+        "occlusion_warning": "Bottom face occluded by support surface; height inferred from top facet to support contact."
+      },
+      "Breadth": {
+        "name": "Breadth",
+        "axis_vector": [
+          -0.5844993792842578,
+          0.8109975991172294,
+          -0.025364736198263294
+        ],
+        "value_m": 0.11569968374850959,
+        "value_cm": 11.569968374850959,
+        "value_mm": 115.69968374850959,
+        "uncertainty_cm": 0.35,
+        "confidence": 0.88,
+        "observation_quality": "COMPLETE_OBSERVATION",
+        "method": "density_gradient_step",
+        "supporting_points": 31856,
+        "occlusion_warning": null
+      },
+      "Height": {
+        "name": "Height",
+        "axis_vector": [
+          -0.8095859203019358,
+          -0.5808259135717658,
+          0.08492288132412709
+        ],
+        "value_m": 0.11566171357842202,
+        "value_cm": 11.566171357842201,
+        "value_mm": 115.66171357842202,
+        "uncertainty_cm": 0.18,
+        "confidence": 0.94,
+        "observation_quality": "RECONSTRUCTED_FACET_PAIR",
+        "method": "facet_pair_distance",
+        "supporting_points": 34263,
+        "occlusion_warning": null
+      }
+    },
+    "volume_cm3": 1694.108862063637,
+    "surface_area_cm2": 853.4283975769774,
+    "centroid_m": [
+      0.02372351580634774,
+      0.1464309814668114,
+      0.7370110491871235
+    ],
+    "principal_axes": [
+      [
+        -0.8095859203019358,
+        -0.5844993792842578,
+        -0.054139756789121286
+      ],
+      [
+        -0.5808259135717658,
+        0.8109975991172294,
+        -0.07017230471926972
+      ],
+      [
+        0.08492288132412709,
+        -0.025364736198263294,
+        -0.9960646235988911
+      ]
+    ],
+    "aspect_ratios": {
+      "L_over_B": 1.094176412460606,
+      "B_over_H": 1.0003282864217797,
+      "L_over_H": 1.0945356157198485
+    },
+    "visibility_map": {
+      "+X (Length +)": {
+        "direction_name": "+X (Length +)",
+        "unit_vector": [
+          -0.8095859203019358,
+          -0.5808259135717658,
+          0.08492288132412709
+        ],
+        "observed_point_count": 6960,
+        "point_ratio_pct": 18.01801801801802,
+        "status": "CONFIRMED_OBSERVED",
+        "mean_normal_alignment": 0.5885621154796237,
+        "boundary_coord_m": 0.08319342758555479
+      },
+      "-X (Length -)": {
+        "direction_name": "-X (Length -)",
+        "unit_vector": [
+          0.8095859203019358,
+          0.5808259135717658,
+          -0.08492288132412709
+        ],
+        "observed_point_count": 6691,
+        "point_ratio_pct": 17.32163197680439,
+        "status": "CONFIRMED_OBSERVED",
+        "mean_normal_alignment": 0.6286313827184126,
+        "boundary_coord_m": -0.08107876653042338
+      },
+      "+Y (Breadth +)": {
+        "direction_name": "+Y (Breadth +)",
+        "unit_vector": [
+          -0.5844993792842578,
+          0.8109975991172294,
+          -0.025364736198263294
+        ],
+        "observed_point_count": 3946,
+        "point_ratio_pct": 10.215387801594698,
+        "status": "CONFIRMED_OBSERVED",
+        "mean_normal_alignment": 0.5407457312391479,
+        "boundary_coord_m": 0.06366574517869422
+      },
+      "-Y (Breadth -)": {
+        "direction_name": "-Y (Breadth -)",
+        "unit_vector": [
+          0.5844993792842578,
+          -0.8109975991172294,
+          0.025364736198263294
+        ],
+        "observed_point_count": 4048,
+        "point_ratio_pct": 10.479444962203582,
+        "status": "CONFIRMED_OBSERVED",
+        "mean_normal_alignment": 0.5758792349573024,
+        "boundary_coord_m": -0.07053618444146458
+      },
+      "+Z (Height +)": {
+        "direction_name": "+Z (Height +)",
+        "unit_vector": [
+          -0.054139756789121286,
+          -0.07017230471926972,
+          -0.9960646235988911
+        ],
+        "observed_point_count": 37390,
+        "point_ratio_pct": 96.79507093300197,
+        "status": "CONFIRMED_OBSERVED",
+        "mean_normal_alignment": 0.857508667666273,
+        "boundary_coord_m": 0.04607443764225672
+      },
+      "-Z (Height -)": {
+        "direction_name": "-Z (Height -)",
+        "unit_vector": [
+          0.054139756789121286,
+          0.07017230471926972,
+          0.9960646235988911
+        ],
+        "observed_point_count": 49,
+        "point_ratio_pct": 0.12685098891995444,
+        "status": "OCCLUDED_SHADOW",
+        "mean_normal_alignment": 0.5745225845850177,
+        "boundary_coord_m": -0.009896244583396135
+      }
+    },
+    "facet_relations": [
+      {
+        "facet_id_1": 3,
+        "facet_id_2": 8,
+        "relation_type": "PARALLEL_OFFSET",
+        "normal_dot_product": 0.9986233957293384,
+        "measured_distance_m": 0.10024672791347539,
+        "measured_distance_cm": 10.02467279134754,
+        "supporting_points": 6192,
+        "rms_residual_mm": 1.5618701694548196
+      },
+      {
+        "facet_id_1": 5,
+        "facet_id_2": 7,
+        "relation_type": "PARALLEL_OFFSET",
+        "normal_dot_product": 0.9990272138176741,
+        "measured_distance_m": 0.021521612751332464,
+        "measured_distance_cm": 2.1521612751332464,
+        "supporting_points": 4208,
+        "rms_residual_mm": 1.5655299949473234
+      }
+    ],
+    "reconstructed_box_vertices_m": [
+      [
+        0.11600875985706603,
+        0.1461708399239179,
+        0.8015085964198332
+      ],
+      [
+        -0.006748764138012595,
+        0.05810019882919899,
+        0.8143854540583526
+      ],
+      [
+        -0.07437515747240137,
+        0.151932364567863,
+        0.8114507621018492
+      ],
+      [
+        0.048382366522677245,
+        0.24000300566258193,
+        0.7985739044633298
+      ],
+      [
+        0.10915489052158779,
+        0.13728731631688393,
+        0.6754109339122157
+      ],
+      [
+        -0.013602633473490833,
+        0.04921667522216501,
+        0.6882877915507352
+      ],
+      [
+        -0.0812290268078796,
+        0.143048840960829,
+        0.6853530995942316
+      ],
+      [
+        0.04152849718719902,
+        0.23111948205554794,
+        0.6724762419557123
+      ]
+    ],
+    "overall_confidence": 0.91,
+    "overall_completeness_pct": 100.0
+  },
+  "ground_truth_comparison": {
+    "gt_length_cm": 16.6,
+    "gt_breadth_cm": 9.1,
+    "gt_height_cm": 5.0,
+    "error_length_cm": -3.9404135113229124,
+    "error_breadth_cm": 2.469968374850959,
+    "error_height_cm": 6.566171357842201,
+    "error_length_pct": -23.73743079110188,
+    "error_breadth_pct": 27.142509613746803,
+    "error_height_pct": 131.32342715684402
+  }
+}
