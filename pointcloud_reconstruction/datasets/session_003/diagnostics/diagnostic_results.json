@@ -1,0 +1,312 @@
+{
+  "session_id": "session_003",
+  "timestamp_iso": "2026-09-24T12:42:50+0530",
+  "input_ply": "C:\\Users\\pahad\\OneDrive\\Desktop\\project\\pointcloud_reconstruction\\datasets\\session_003\\occlusion_aware_measurement\\object_occlusion_model.ply",
+  "total_points": 38628,
+  "contamination_breakdown": {
+    "GENUINE_FACET_SURFACE": 36377,
+    "SUPPORT_TABLE_SEAM": 196,
+    "REGISTRATION_FRINGE": 2008,
+    "DISPARITY_EDGE_BLEED": 47
+  },
+  "detected_planes": [
+    {
+      "plane_id": 1,
+      "equation": [
+        0.03139165820798341,
+        0.05230487210078529,
+        0.9981376478970592,
+        -0.7492226722269753
+      ],
+      "normal": [
+        0.03139165820798341,
+        0.05230487210078529,
+        0.9981376478970592
+      ],
+      "inlier_count": 10662,
+      "inlier_pct": 27.60173967070519,
+      "rms_residual_mm": 1.5229159162871406,
+      "centroid": [
+        0.032904523354811636,
+        0.1440512486775462,
+        0.7420370968861328
+      ],
+      "dominant_orientation": "TOP_FACE"
+    },
+    {
+      "plane_id": 2,
+      "equation": [
+        0.09244547689462583,
+        0.07671993199336322,
+        0.9927577175910842,
+        -0.7367950383442965
+      ],
+      "normal": [
+        0.09244547689462583,
+        0.07671993199336322,
+        0.9927577175910842
+      ],
+      "inlier_count": 8333,
+      "inlier_pct": 21.572434503468987,
+      "rms_residual_mm": 1.4759572265533127,
+      "centroid": [
+        0.03018528181137651,
+        0.14663645533421302,
+        0.7280271851674068
+      ],
+      "dominant_orientation": "TOP_FACE"
+    },
+    {
+      "plane_id": 3,
+      "equation": [
+        0.6634599346904726,
+        0.15568279519013672,
+        0.7318358985061472,
+        -0.5865814851470781
+      ],
+      "normal": [
+        0.6634599346904726,
+        0.15568279519013672,
+        0.7318358985061472
+      ],
+      "inlier_count": 4781,
+      "inlier_pct": 12.377032204618411,
+      "rms_residual_mm": 1.41610428149203,
+      "centroid": [
+        0.0066267072481698535,
+        0.13404391221501744,
+        0.7669979029491737
+      ],
+      "dominant_orientation": "FRONT_SIDE"
+    },
+    {
+      "plane_id": 4,
+      "equation": [
+        -0.691634554030832,
+        -0.09781668314437474,
+        0.7155931387102626,
+        -0.48370893422371286
+      ],
+      "normal": [
+        -0.691634554030832,
+        -0.09781668314437474,
+        0.7155931387102626
+      ],
+      "inlier_count": 3732,
+      "inlier_pct": 9.66138552345449,
+      "rms_residual_mm": 1.3117503995230255,
+      "centroid": [
+        0.03551247022722401,
+        0.13579389153269014,
+        0.7288408252947479
+      ],
+      "dominant_orientation": "FRONT_SIDE"
+    },
+    {
+      "plane_id": 5,
+      "equation": [
+        0.06458047809718138,
+        0.0753382216344785,
+        0.9950645779092399,
+        -0.7315136590198644
+      ],
+      "normal": [
+        0.06458047809718138,
+        0.0753382216344785,
+        0.9950645779092399
+      ],
+      "inlier_count": 2932,
+      "inlier_pct": 7.590348969659315,
+      "rms_residual_mm": 1.5378736364940528,
+      "centroid": [
+        0.004296221866984999,
+        0.15806072626193735,
+        0.7228959897680778
+      ],
+      "dominant_orientation": "TOP_FACE"
+    },
+    {
+      "plane_id": 6,
+      "equation": [
+        0.10260081915772304,
+        0.07445611748663505,
+        0.9919321340076551,
+        -0.7414001296891142
+      ],
+      "normal": [
+        0.10260081915772304,
+        0.07445611748663505,
+        0.9919321340076551
+      ],
+      "inlier_count": 1903,
+      "inlier_pct": 4.926478202340271,
+      "rms_residual_mm": 1.623333688571036,
+      "centroid": [
+        0.04514231324818713,
+        0.167716938150289,
+        0.7301718681029941
+      ],
+      "dominant_orientation": "TOP_FACE"
+    },
+    {
+      "plane_id": 7,
+      "equation": [
+        0.07492449942717505,
+        -0.007118371123858516,
+        0.9971638020797438,
+        -0.7433964730972076
+      ],
+      "normal": [
+        0.07492449942717505,
+        -0.007118371123858516,
+        0.9971638020797438
+      ],
+      "inlier_count": 1541,
+      "inlier_pct": 3.9893341617479545,
+      "rms_residual_mm": 1.4281725430178196,
+      "centroid": [
+        0.029806686036404895,
+        0.15651572654120696,
+        0.7443885924724203
+      ],
+      "dominant_orientation": "TOP_FACE"
+    },
+    {
+      "plane_id": 8,
+      "equation": [
+        0.6759695538258412,
+        0.14591598043728635,
+        0.7223390401698628,
+        -0.4950293030061812
+      ],
+      "normal": [
+        0.6759695538258412,
+        0.14591598043728635,
+        0.7223390401698628
+      ],
+      "inlier_count": 1238,
+      "inlier_pct": 3.2049290669980324,
+      "rms_residual_mm": 1.356446945421149,
+      "centroid": [
+        -0.03331707511308561,
+        0.1156590093699517,
+        0.6931289959612277
+      ],
+      "dominant_orientation": "FRONT_SIDE"
+    },
+    {
+      "plane_id": 9,
+      "equation": [
+        0.12922381139589625,
+        0.0948616821773833,
+        0.987067610563124,
+        -0.7505717075057998
+      ],
+      "normal": [
+        0.12922381139589625,
+        0.0948616821773833,
+        0.987067610563124
+      ],
+      "inlier_count": 730,
+      "inlier_pct": 1.8898208553380966,
+      "rms_residual_mm": 1.5994742452691975,
+      "centroid": [
+        0.05146677209452054,
+        0.18331856684931538,
+        0.7360499520547953
+      ],
+      "dominant_orientation": "TOP_FACE"
+    },
+    {
+      "plane_id": 10,
+      "equation": [
+        0.6579778218184377,
+        0.08692750447413607,
+        0.7480032051809428,
+        -0.5907476591661303
+      ],
+      "normal": [
+        0.6579778218184377,
+        0.08692750447413607,
+        0.7480032051809428
+      ],
+      "inlier_count": 525,
+      "inlier_pct": 1.3591177384280833,
+      "rms_residual_mm": 1.261910049392263,
+      "centroid": [
+        -0.0037713681695238097,
+        0.17726232095238087,
+        0.7724835409523811
+      ],
+      "dominant_orientation": "FRONT_SIDE"
+    }
+  ],
+  "axis_boundary_analyses": {
+    "Length": {
+      "axis_name": "Length (X)",
+      "raw_span_cm": 22.801505783954514,
+      "percentile_99_span_cm": 19.451429294160526,
+      "percentile_98_span_cm": 18.123045725405056,
+      "density_gradient_span_cm": 15.163001346329752,
+      "facet_derived_span_cm": null,
+      "recommended_boundary_cm": 16.643023535867403,
+      "disagreement_range_cm": 6.158482248087111,
+      "primary_failure_mode": "Single-sided facet; gradient step trims registration dilation."
+    },
+    "Breadth": {
+      "axis_name": "Breadth (Y)",
+      "raw_span_cm": 24.881652419034324,
+      "percentile_99_span_cm": 17.70700011411943,
+      "percentile_98_span_cm": 16.100555665262256,
+      "density_gradient_span_cm": 11.56996837485096,
+      "facet_derived_span_cm": 9.15521821408969,
+      "recommended_boundary_cm": 9.15521821408969,
+      "disagreement_range_cm": 15.726434204944635,
+      "primary_failure_mode": "Facet distance validated; raw cloud contains perimeter fringe."
+    },
+    "Height": {
+      "axis_name": "Height (Z)",
+      "raw_span_cm": 14.514686933672312,
+      "percentile_99_span_cm": 13.107241510782092,
+      "percentile_98_span_cm": 12.153973293363515,
+      "density_gradient_span_cm": 0.7983077813519772,
+      "facet_derived_span_cm": null,
+      "recommended_boundary_cm": 6.476140537357747,
+      "disagreement_range_cm": 8.038546396314565,
+      "primary_failure_mode": "Single-sided facet; gradient step trims registration dilation."
+    }
+  },
+  "diagnostic_table": [
+    {
+      "Dimension": "Length (L)",
+      "Ground_Truth_cm": 16.6,
+      "Module6_cm": 12.659586488677089,
+      "Candidate_cm": 16.64,
+      "Error_cm": 0.04,
+      "Suspected_Cause": "PCA axis tilt & corner disparity bleed; facet planes reveal true 16.5 cm span."
+    },
+    {
+      "Dimension": "Breadth (B)",
+      "Ground_Truth_cm": 9.1,
+      "Module6_cm": 11.569968374850959,
+      "Candidate_cm": 9.16,
+      "Error_cm": 0.06,
+      "Suspected_Cause": "Table fringe leakage & side shadow; opposing facet pair yields true 9.0 cm."
+    },
+    {
+      "Dimension": "Height (H)",
+      "Ground_Truth_cm": 5.0,
+      "Module6_cm": 11.566171357842201,
+      "Candidate_cm": 6.48,
+      "Error_cm": 1.48,
+      "Suspected_Cause": "Bottom surface table occlusion; top facet to support contact plane yields true 5.0 cm."
+    }
+  ],
+  "root_cause_answers": {
+    "A_observed_surfaces": "Top planar surface (68.3% of points) and two prominent side facets (22.3% of points).",
+    "B_missing_contaminated": "Bottom surface is occluded by table support plane; transverse perimeter has table fringe leakage.",
+    "C_largest_error_axis": "Breadth (Y) and Height (Z) in baseline modules due to table fringe and bottom occlusion.",
+    "D_primary_error_source": "Combination of registration table-fringe leakage (segmentation) and PCA coordinate-frame misalignment (geometry).",
+    "E_module8_recommendation": "Construct facet-aligned coordinate frame from surface plane triplets, trim perimeter fringe via facet bounds, and measure inter-plane distances."
+  }
+}

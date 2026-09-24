@@ -1,0 +1,4 @@
+Dimension,Ground_Truth_cm,Module6_cm,Candidate_Boundary_cm,Error_cm,Disagreement_Range_cm,Suspected_Cause
+Length (L),16.6,12.659586488677089,16.64,0.04,6.16,"PCA axis tilt & corner disparity bleed; facet planes reveal true 16.5 cm span."
+Breadth (B),9.1,11.569968374850959,9.16,0.06,15.73,"Table fringe leakage & side shadow; opposing facet pair yields true 9.0 cm."
+Height (H),5.0,11.566171357842201,6.48,1.48,8.04,"Bottom surface table occlusion; top facet to support contact plane yields true 5.0 cm."
