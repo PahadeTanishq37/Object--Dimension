@@ -1,0 +1,82 @@
+{
+  "session_id": "session_001",
+  "created_at": "2026-09-24T10:47:05+0530",
+  "total_views": 2,
+  "units": "meters",
+  "views": [
+    {
+      "view_id": "view_001",
+      "session_id": "session_001",
+      "capture_order": 1,
+      "timestamp_iso": "2026-09-24T10:47:02+0530",
+      "unix_timestamp": 1790227022.3512003,
+      "camera_name": "RealSense D455F",
+      "camera_serial": "342622300088",
+      "firmware": "5.17.3.10",
+      "usb_type": "3.2",
+      "depth_scale": 0.0010000000474974513,
+      "resolution": [
+        1280,
+        720
+      ],
+      "fps": 30.0,
+      "intrinsics_fx": 646.5585327148438,
+      "intrinsics_fy": 645.7134399414062,
+      "intrinsics_cx": 637.2412109375,
+      "intrinsics_cy": 366.93597412109375,
+      "distortion_model": "distortion.inverse_brown_conrady",
+      "distortion_coeffs": [
+        -0.05584990978240967,
+        0.06236785650253296,
+        -0.00015661904762964696,
+        0.0008286521770060062,
+        -0.02039741724729538
+      ],
+      "valid_3d_points": 135646,
+      "depth_coverage_pct": 14.71853298611111,
+      "min_z_m": 0.49500003457069397,
+      "max_z_m": 7.975000381469727,
+      "mean_z_m": 1.369914174079895,
+      "median_z_m": 0.7070000171661377,
+      "units": "meters",
+      "coordinate_frame": "RealSense Optical (+X Right, +Y Down, +Z Forward)"
+    },
+    {
+      "view_id": "view_002",
+      "session_id": "session_001",
+      "capture_order": 2,
+      "timestamp_iso": "2026-09-24T10:47:04+0530",
+      "unix_timestamp": 1790227024.2686234,
+      "camera_name": "RealSense D455F",
+      "camera_serial": "342622300088",
+      "firmware": "5.17.3.10",
+      "usb_type": "3.2",
+      "depth_scale": 0.0010000000474974513,
+      "resolution": [
+        1280,
+        720
+      ],
+      "fps": 30.0,
+      "intrinsics_fx": 646.5585327148438,
+      "intrinsics_fy": 645.7134399414062,
+      "intrinsics_cx": 637.2412109375,
+      "intrinsics_cy": 366.93597412109375,
+      "distortion_model": "distortion.inverse_brown_conrady",
+      "distortion_coeffs": [
+        -0.05584990978240967,
+        0.06236785650253296,
+        -0.00015661904762964696,
+        0.0008286521770060062,
+        -0.02039741724729538
+      ],
+      "valid_3d_points": 139766,
+      "depth_coverage_pct": 15.165581597222221,
+      "min_z_m": 0.49500003457069397,
+      "max_z_m": 7.975000381469727,
+      "mean_z_m": 1.3745018243789673,
+      "median_z_m": 0.7110000252723694,
+      "units": "meters",
+      "coordinate_frame": "RealSense Optical (+X Right, +Y Down, +Z Forward)"
+    }
+  ]
+}

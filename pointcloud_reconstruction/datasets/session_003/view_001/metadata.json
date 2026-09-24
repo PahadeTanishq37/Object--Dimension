@@ -1,0 +1,37 @@
+{
+  "view_id": "view_001",
+  "session_id": "session_003",
+  "capture_order": 1,
+  "timestamp_iso": "2026-09-24T11:17:50+0530",
+  "unix_timestamp": 1790228870.487148,
+  "camera_name": "RealSense D455F",
+  "camera_serial": "342622300088",
+  "firmware": "5.17.3.10",
+  "usb_type": "3.2",
+  "depth_scale": 0.0010000000474974513,
+  "resolution": [
+    1280,
+    720
+  ],
+  "fps": 14.228951227477548,
+  "intrinsics_fx": 646.2066650390625,
+  "intrinsics_fy": 645.362060546875,
+  "intrinsics_cx": 637.2412109375,
+  "intrinsics_cy": 366.93597412109375,
+  "distortion_model": "distortion.inverse_brown_conrady",
+  "distortion_coeffs": [
+    -0.05584990978240967,
+    0.06236785650253296,
+    -0.00015661904762964696,
+    0.0008286521770060062,
+    -0.02039741724729538
+  ],
+  "valid_3d_points": 391066,
+  "depth_coverage_pct": 42.433376736111114,
+  "min_z_m": 0.49500003457069397,
+  "max_z_m": 7.975000381469727,
+  "mean_z_m": 1.981833815574646,
+  "median_z_m": 0.999000072479248,
+  "units": "meters",
+  "coordinate_frame": "RealSense Optical (+X Right, +Y Down, +Z Forward)"
+}

@@ -1,0 +1,9 @@
+# Requirements — RealSense D455f Multi-View 3D Reconstruction Pipeline
+# Modules 1, 2 & 3: Acquisition, Dataset Capture & Multi-View Registration
+
+pyrealsense2>=2.54.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+matplotlib>=3.7.0
+scipy>=1.10.0
+open3d>=0.18.0

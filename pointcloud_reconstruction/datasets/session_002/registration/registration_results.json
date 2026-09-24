@@ -1,0 +1,118 @@
+{
+  "session_id": "session_002",
+  "timestamp_iso": "2026-09-24T11:11:39+0530",
+  "reference_view_id": "view_001",
+  "total_views": 2,
+  "registered_views": [
+    "view_001",
+    "view_002"
+  ],
+  "global_transformations": {
+    "view_001": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "view_002": [
+      [
+        0.9999990274592884,
+        -0.0008740437800559237,
+        0.00108679710569529,
+        -0.000651092797140221
+      ],
+      [
+        0.0008749195802489391,
+        0.9999992927295134,
+        -0.0008056402426901777,
+        0.0009217772973469042
+      ],
+      [
+        -0.0010860921721932246,
+        0.0008065903192399104,
+        0.9999990849075063,
+        -9.182686951702068e-05
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "pairwise_results": [
+    {
+      "source_view_id": "view_002",
+      "target_view_id": "view_001",
+      "transformation": [
+        [
+          0.9999990274592884,
+          -0.0008740437800559237,
+          0.00108679710569529,
+          -0.000651092797140221
+        ],
+        [
+          0.0008749195802489391,
+          0.9999992927295134,
+          -0.0008056402426901777,
+          0.0009217772973469042
+        ],
+        [
+          -0.0010860921721932246,
+          0.0008065903192399104,
+          0.9999990849075063,
+          -9.182686951702068e-05
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "fitness": 0.47690314510364545,
+      "inlier_rmse_m": 0.003698156193919036,
+      "inlier_rmse_mm": 3.698156193919036,
+      "num_source_points": 22384,
+      "num_target_points": 22243,
+      "num_inlier_correspondences": 10675,
+      "rotation_deg": 0.09229608962237275,
+      "translation_norm_m": 0.0011322664838090617,
+      "translation_vec_m": [
+        -0.000651092797140221,
+        0.0009217772973469042,
+        -9.182686951702068e-05
+      ],
+      "is_valid": true,
+      "status_message": "SUCCESS (High Confidence)"
+    }
+  ],
+  "mean_fitness": 0.47690314510364545,
+  "mean_rmse_mm": 3.698156193919036,
+  "all_pairs_valid": true,
+  "global_cloud_points": 136998,
+  "voxel_size_m": 0.005,
+  "output_ply_path": "C:\\Users\\pahad\\OneDrive\\Desktop\\project\\pointcloud_reconstruction\\datasets\\session_002\\registration\\global_registered_cloud.ply",
+  "output_json_path": "C:\\Users\\pahad\\OneDrive\\Desktop\\project\\pointcloud_reconstruction\\datasets\\session_002\\registration\\registration_results.json"
+}
