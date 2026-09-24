@@ -24,6 +24,10 @@ By combining metric 3D point cloud deprojection, multi-plane RANSAC surface esti
 | **Stage 5.1–5.5** | [`box_measurement.py`](realsense_measurement/box_measurement.py) | Multi-plane RANSAC segmentation, plane normal orthogonality checks, 3D edge reconstruction ($E_1..E_{12}$), corner calculation ($C_1..C_8$), and live HUD debug mode. | ✅ Complete |
 | **Stage 5.6** | [`distance_invariance_validation.py`](realsense_measurement/distance_invariance_validation.py) | Formal multi-distance verification (80 cm, 100 cm, 120 cm), MAE/RMSE calculations, and 4-panel diagnostic plot generator. | ✅ Complete |
 | **Stage 6 (Core)** | [`object_detector.py`](realsense_measurement/object_detector.py) | Modular detector interface (`BaseObjectDetector`), temporal bounding box tracker (`DetectionTracker`), and autonomous RGB-D foreground detector. | ✅ Complete |
+| **Module 1 (3D)** | [`module1_pointcloud_acquisition.py`](pointcloud_reconstruction/module1_pointcloud_acquisition.py) | Full-frame calibrated metric 3D point cloud generation and streaming. | ✅ Complete |
+| **Module 2 (3D)** | [`module2_multiview_dataset_capture.py`](pointcloud_reconstruction/module2_multiview_dataset_capture.py) | Multi-view sequential capture, quality gating, and session dataset management. | ✅ Complete |
+| **Module 3 (3D)** | [`module3_multiview_registration.py`](pointcloud_reconstruction/module3_multiview_registration.py) | Coarse-to-fine FPFH global registration & Point-to-Plane ICP global alignment. | ✅ Complete |
+| **Module 4 (3D)** | [`module4_object_segmentation.py`](pointcloud_reconstruction/module4_object_segmentation.py) | Dominant support plane RANSAC removal & DBSCAN 3D target object segmentation. | ✅ Complete |
 
 ---
 
