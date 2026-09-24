@@ -1,0 +1,4 @@
+Dimension,Value_m,Value_cm,Value_mm,Uncertainty_cm,Confidence,Method,Supporting_Points,RMS_Residual_mm
+Length,0.163674,16.37,163.7,1.54,0.88,density_gradient_step,35729,2.50
+Breadth,0.136456,13.65,136.5,2.50,0.88,density_gradient_step,34864,2.50
+Height,0.055167,5.52,55.2,2.05,0.88,density_gradient_step,31625,2.50
